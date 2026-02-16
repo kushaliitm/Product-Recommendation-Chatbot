@@ -1,284 +1,419 @@
 # Product Recommendation Chatbot
 
-An AI-powered e-commerce chatbot application that leverages **LangChain**, **LangGraph**, and vector database technology to provide intelligent product recommendations and answer product-related queries based on real product reviews.
+An end-to-end **LLMOps RAG chatbot system** that provides intelligent product recommendations using real customer reviews.  
+The application integrates **LangChain, LangGraph, AstraDB vector search, Groq LLM, Docker, Kubernetes, Prometheus, and Grafana** to demonstrate production-ready AI deployment.
 
-## 📋 Table of Contents
+---
 
-- [Overview](#overview)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [License](#license)
-- [Contributing](#contributing)
-
-## Overview
+# Overview
 
 This project implements a **Retrieval-Augmented Generation (RAG)** chatbot that:
-- Ingests product review data into a vector database (AstraDB)
-- Retrieves relevant product information based on user queries
-- Generates contextual responses using LLM (Groq's Qwen-3.2B)
-- Provides multiple interfaces for interaction (Flask, Streamlit)
-- Maintains conversation memory using LangGraph
 
-## ✨ Features
+- Indexes product reviews into a vector database (AstraDB)
+- Retrieves semantically relevant product context
+- Generates responses using Groq LLM (Qwen)
+- Maintains conversation memory via LangGraph
+- Exposes REST + Web UI interfaces
+- Deploys via Docker + Kubernetes
+- Monitored with Prometheus & Grafana
 
-- **🤖 AI-powered product search** - Semantic search across product reviews
-- **📊 Vector embeddings** - HuggingFace embeddings (BAAI/bge-base-en-v1.5)
-- **💾 Persistent vector DB** - AstraDB integration for scalable storage
-- **🧵 Conversation memory** - Thread-based memory management
-- **🌐 Multiple interfaces** - Flask REST API & Streamlit interactive UI
-- **📈 Monitoring** - Prometheus metrics and health checks
-- **⚡ Auto-summarization** - Conversation summarization middleware
+---
 
-## Architecture
+# Features
 
-### Core Components
+- Semantic product search across reviews  
+- HuggingFace embeddings (BAAI/bge-base-en-v1.5)  
+- AstraDB persistent vector storage  
+- LangGraph conversational memory  
+- Flask REST API + Streamlit UI  
+- Prometheus metrics endpoint  
+- Kubernetes deployment ready  
+- Observability with Grafana dashboards  
 
-**Data Ingestion Pipeline**
-- **DataConverter**: Transforms CSV product reviews into LangChain Documents
-- **DataIngestor**: Manages AstraDB vector store operations
-- **Embeddings**: BAAI/bge-base-en-v1.5 from HuggingFace
+---
 
-**RAG Agent**
-- **RAGAgentBuilder**: LangGraph-based agent with:
-  - Product retriever tool (top-3 relevant reviews)
-  - Groq Qwen-3.2B LLM
-  - Summarization middleware (every 10 messages)
-  - In-memory conversation checkpointer
-
-**Web Interfaces**
-- **Flask** (`app.py`) - RESTful API with metrics & health checks
-- **Streamlit** (`streamlit_app.py`) - Interactive chat UI with session state
-
-### Data Flow
+# Architecture
 
 ```
-CSV Dataset → DataConverter → LangChain Docs → HuggingFace Embeddings → AstraDB
-                                                                           ↓
-                                                      RAG Agent + Retriever Tool
-                                                           ↓
-                                                      Groq LLM Response
+                ┌────────────────────┐
+                │   Product Reviews   │
+                └─────────┬──────────┘
+                          ↓
+                  HuggingFace Embeddings
+                          ↓
+                      AstraDB
+                          ↓
+                  Retriever Tool
+                          ↓
+                 LangGraph RAG Agent
+                          ↓
+                      Groq LLM
+                          ↓
+              Flask / Streamlit Interface
+                          ↓
+                 Kubernetes Service
+                          ↓
+                       User
 ```
 
-## Installation
+Monitoring flow:
 
-### Prerequisites
+```
+Flask Metrics → Prometheus → Grafana
+```
 
-- Python 3.8 or higher
-- AstraDB account and credentials
+---
+
+# Project Structure
+
+```
+Product-Recommendation-Chatbot/
+│
+├── app.py
+├── streamlit_app.py
+├── main.py
+├── requirements.txt
+├── Dockerfile
+├── flask-deployment.yaml
+│
+├── data/
+│   └── product_review.csv
+│
+├── products/
+│   ├── config.py
+│   ├── data_converter.py
+│   ├── data_ingestion.py
+│   └── rag_agent.py
+│
+├── utils/
+│
+├── frontend/
+│
+├── prometheus/
+│   ├── prometheus-configmap.yaml
+│   └── prometheus-deployment.yaml
+│
+└── grafana/
+    └── grafana-deployment.yaml
+```
+
+---
+
+# Local Installation
+
+## Prerequisites
+
+- Python 3.9+
+- AstraDB account
 - Groq API key
-- HuggingFace API token
+- HuggingFace token
 
-### Setup Steps
+---
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd Product-Recommendation-Chatbot
-   ```
+## Setup
 
-2. **Create virtual environment:**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+```bash
+git clone https://github.com/kushaliitm/Product-Recommendation-Chatbot.git
+cd Product-Recommendation-Chatbot
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+python -m venv venv
+source venv/bin/activate
 
-4. **Configure environment variables:**
-   Create a `.env` file in the root directory:
-   ```env
-   ASTRA_DB_API_ENDPOINT=https://your-instance-id-region.apps.astra.datastax.com
-   ASTRA_DB_APPLICATION_TOKEN=AstraCS:...
-   ASTRA_DB_KEYSPACE=default_keyspace
-   GROQ_API_KEY=gsk_...
-   HF_TOKEN=hf_...
-   HUGGINGFACEHUB_API_TOKEN=hf_...
-   ```
+pip install -r requirements.txt
+```
 
-5. **Prepare product data:**
-   Place your product reviews CSV at `data/product_review.csv` with required columns:
-   - `product_title` - Product name
-   - `review` - Customer review text
+---
 
-## Usage
+## Environment Variables
 
-### Running Flask Application
+Create `.env`:
+
+```
+ASTRA_DB_API_ENDPOINT=
+ASTRA_DB_APPLICATION_TOKEN=
+ASTRA_DB_KEYSPACE=default_keyspace
+GROQ_API_KEY=
+HF_TOKEN=
+HUGGINGFACEHUB_API_TOKEN=
+```
+
+---
+
+# Usage
+
+## Run Flask API
 
 ```bash
 python app.py
 ```
-Accessible at `http://localhost:8000`
 
-**Available Endpoints:**
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | Chat interface |
-| `/get` | POST | Submit query |
-| `/health` | GET | Health status |
-| `/metrics` | GET | Prometheus metrics |
+Open:
 
-### Running Streamlit Application
+```
+http://localhost:8000
+```
+
+---
+
+## Run Streamlit UI
 
 ```bash
 streamlit run streamlit_app.py
 ```
-Accessible at `http://localhost:8501`
 
-**Features:**
-- Interactive chat interface
-- Session state management
-- New chat functionality
-- Real-time response streaming
-
-### Data Ingestion
-
-Initialize or update the vector database:
-
-```bash
-# Use existing vectors
-python -m products.data_ingestion
-
-# Process new data
-python -c "from products.data_ingestion import DataIngestor; DataIngestor().ingest(load_existing=False)"
-```
-
-## Project Structure
+Open:
 
 ```
-Product-Recommendation-Chatbot/
-├── app.py                      # Flask application
-├── streamlit_app.py            # Streamlit chat UI
-├── main.py                     # Entry point
-├── requirements.txt            # Python dependencies
-├── .dockerignore               # Docker ignore patterns
-├── README.md                   # This file
-├── data/
-│   └── product_review.csv      # Product reviews dataset
-├── products/
-│   ├── __init__.py
-│   ├── config.py               # Configuration management
-│   ├── data_converter.py       # CSV to Document conversion
-│   ├── data_ingestion.py       # Vector DB operations
-│   └── rag_agent.py            # RAG agent builder
-├── utils/
-│   ├── __init__.py
-│   ├── logger.py               # Logging utilities
-│   └── custom_exception.py     # Custom exceptions
-└── frontend/
-    ├── static/
-    │   └── style.css           # Styling
-    └── templates/
-        └── index.html          # Flask template
+http://localhost:8501
 ```
-
-## Configuration
-
-Edit `products/config.py` to customize models and settings:
-
-```python
-class Config:
-    EMBEDDING_MODEL = "BAAI/bge-base-en-v1.5"  # HuggingFace model
-    RAG_MODEL = "groq:qwen/qwen3-32b"          # Groq model
-    # AstraDB and API keys loaded from .env
-```
-
-## Deployment
-
-### Docker Deployment
-
-1. **Build Docker image:**
-   ```bash
-   docker build -t product-chatbot:latest .
-   ```
-
-2. **Run container:**
-   ```bash
-   docker run -p 8000:8000 \
-     --env-file .env \
-     product-chatbot:latest
-   ```
-
-### Kubernetes Deployment
-
-1. **Create secrets:**
-   ```bash
-   kubectl create secret generic chatbot-secrets \
-     --from-literal=GROQ_API_KEY=<key> \
-     --from-literal=ASTRA_DB_APPLICATION_TOKEN=<token> \
-     --from-literal=ASTRA_DB_API_ENDPOINT=<endpoint> \
-     --from-literal=HF_TOKEN=<token>
-   ```
-
-2. **Apply deployment:**
-   ```bash
-   kubectl apply -f k8s-deployment.yaml
-   ```
-
-### Monitoring with Prometheus & Grafana
-
-The application exposes Prometheus metrics at `/metrics`:
-- `http_requests_total` - Total HTTP requests
-- `model_predictions_total` - Total model predictions
-
-Configure Grafana to visualize these metrics using the Prometheus data source.
-
-## How It Works
-
-1. **User submits query** - E.g., "What's the best laptop?"
-2. **Vector search** - Retrieves top-3 relevant reviews from AstraDB
-3. **LLM processing** - Groq LLM generates response based on reviews
-4. **Memory management** - LangGraph maintains conversation history
-5. **Conversation optimization** - Summarizes long conversations automatically
-
-## Error Handling
-
-The chatbot gracefully handles:
-- Missing relevant products → Polite fallback message
-- Connection issues → Retry logic with timeouts
-- Invalid queries → Context-aware error responses
-
-## Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| langchain | 1.2.1 | LLM orchestration |
-| langchain-groq | 1.1.1 | Groq integration |
-| langchain-astradb | 1.0.0 | AstraDB vector store |
-| langchain-huggingface | 1.2.0 | Embeddings |
-| streamlit | 1.52.2 | Web UI |
-| flask | 3.1.2 | REST API |
-| pandas | 2.3.3 | Data processing |
-| prometheus-client | 0.23.1 | Metrics |
-
-## License
-
-MIT License - See LICENSE file for details
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/improvement`)
-3. Commit changes (`git commit -m 'Add feature'`)
-4. Push to branch (`git push origin feature/improvement`)
-5. Open a Pull Request
-
-## Support
-
-For issues, questions, or suggestions:
-- Open an [GitHub Issue](https://github.com/kushaliitm/Product-Recommendation-Chatbot/issues)
-- Check existing discussions
-- Review the documentation
 
 ---
 
-**Built with ❤️ using LangChain, LangGraph, and AstraDB**
+# Data Ingestion
+
+```bash
+python -m products.data_ingestion
+```
+
+---
+
+# Deployment (LLMOps Stack)
+
+This project demonstrates full AI system deployment on **Google Cloud VM → Docker → Kubernetes → Monitoring**.
+
+---
+
+# 1. Create Google Cloud VM
+
+Configuration:
+
+- Machine: E2 Standard
+- RAM: 16 GB
+- Disk: 256 GB
+- OS: Ubuntu 24.04
+- Enable HTTP/HTTPS
+
+SSH into VM.
+
+---
+
+# 2. Clone Repo on VM
+
+```bash
+git clone https://github.com/kushaliitm/Product-Recommendation-Chatbot.git
+cd Product-Recommendation-Chatbot
+```
+
+---
+
+# 3. Install Docker
+
+```bash
+sudo apt update
+sudo apt install -y docker.io
+sudo usermod -aG docker $USER
+newgrp docker
+docker run hello-world
+```
+
+---
+
+# 4. Install Minikube & kubectl
+
+```bash
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+minikube start --driver=docker
+
+sudo snap install kubectl --classic
+```
+
+Verify:
+
+```bash
+kubectl get nodes
+```
+
+---
+
+# 5. Build Docker Image inside Minikube
+
+```bash
+eval $(minikube docker-env)
+docker build -t product-chatbot:latest .
+```
+
+---
+
+# 6. Create Kubernetes Secrets
+
+```bash
+kubectl create secret generic chatbot-secrets   --from-literal=GROQ_API_KEY=YOUR_KEY   --from-literal=ASTRA_DB_APPLICATION_TOKEN=YOUR_TOKEN   --from-literal=ASTRA_DB_KEYSPACE=default_keyspace   --from-literal=ASTRA_DB_API_ENDPOINT=YOUR_ENDPOINT   --from-literal=HF_TOKEN=YOUR_TOKEN   --from-literal=HUGGINGFACEHUB_API_TOKEN=YOUR_TOKEN
+```
+
+---
+
+# 7. Deploy App to Kubernetes
+
+```bash
+kubectl apply -f flask-deployment.yaml
+kubectl get pods
+```
+
+---
+
+# 8. Access Application
+
+```bash
+kubectl port-forward svc/flask-service 5000:80 --address 0.0.0.0
+```
+
+Open:
+
+```
+http://VM_EXTERNAL_IP:5000
+```
+
+---
+
+# Monitoring (Prometheus + Grafana)
+
+---
+
+# 9. Create Monitoring Namespace
+
+```bash
+kubectl create namespace monitoring
+```
+
+---
+
+# 10. Deploy Prometheus
+
+```bash
+kubectl apply -f prometheus/prometheus-configmap.yaml
+kubectl apply -f prometheus/prometheus-deployment.yaml
+```
+
+Access:
+
+```bash
+kubectl port-forward --address 0.0.0.0 svc/prometheus-service -n monitoring 9090:9090
+```
+
+Open:
+
+```
+http://VM_IP:9090
+```
+
+---
+
+# 11. Deploy Grafana
+
+```bash
+kubectl apply -f grafana/grafana-deployment.yaml
+```
+
+Access:
+
+```bash
+kubectl port-forward --address 0.0.0.0 svc/grafana-service -n monitoring 3000:3000
+```
+
+Open:
+
+```
+http://VM_IP:3000
+```
+
+Login:
+
+```
+admin / admin
+```
+
+---
+
+# 12. Connect Grafana to Prometheus
+
+Grafana → Settings → Data Sources → Add Prometheus
+
+```
+URL:
+http://prometheus-service.monitoring.svc.cluster.local:9090
+```
+
+Save & Test.
+
+---
+
+# Metrics Exposed
+
+```
+/metrics
+```
+
+Includes:
+
+- http_requests_total
+- model_predictions_total
+- request_latency_seconds
+
+---
+
+# Deployment Verification
+
+- Docker running
+- Minikube cluster active
+- Pod running
+- Flask accessible
+- Prometheus scraping
+- Grafana dashboard visible
+
+---
+
+# Production Considerations
+
+- Kubernetes Secrets for credentials
+- Containerized inference API
+- Vector DB externalized (AstraDB)
+- Observability integrated
+- Cloud-portable architecture
+
+---
+
+# Future Improvements
+
+- GKE / EKS deployment
+- Helm charts
+- Ingress + domain
+- CI/CD pipeline
+- Autoscaling (HPA)
+- Centralized logging
+
+---
+
+# Tech Stack
+
+- LangChain
+- LangGraph
+- AstraDB
+- Groq LLM
+- HuggingFace Embeddings
+- Flask
+- Streamlit
+- Docker
+- Kubernetes
+- Prometheus
+- Grafana
+
+---
+
+# License
+
+MIT License
+
+---
+
