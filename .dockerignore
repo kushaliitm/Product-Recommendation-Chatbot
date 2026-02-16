@@ -1,0 +1,96 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.env.local
+.env.*.local
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Documentation
+docs/_build/
+site/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Node (if applicable)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Build outputs
+*.log
+dist/
+build/
+
+# Misc
+.cache/
+temp/
+tmp/
+*.bak
