@@ -374,27 +374,6 @@ Includes:
 
 ---
 
-# Production Considerations
-
-- Kubernetes Secrets for credentials
-- Containerized inference API
-- Vector DB externalized (AstraDB)
-- Observability integrated
-- Cloud-portable architecture
-
----
-
-# Future Improvements
-
-- GKE / EKS deployment
-- Helm charts
-- Ingress + domain
-- CI/CD pipeline
-- Autoscaling (HPA)
-- Centralized logging
-
----
-
 # Tech Stack
 
 - LangChain
@@ -411,9 +390,4 @@ Includes:
 
 ---
 
-# License
-
-MIT License
-
----
 
