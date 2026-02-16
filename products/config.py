@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 # hugging face gets automatically loaded 
-load_dotenv()
+load_dotenv(override=True)
 
 class Config:
     ASTRA_DB_API_ENDPOINT = os.getenv("ASTRA_DB_API_ENDPOINT")
